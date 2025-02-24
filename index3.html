@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body onload="getLocation()">
+    <!-- <div class="d-flex justify-content-center align-items-center">
+        <main class="card col-12 col-md-6 col-lg-6 mt-5 mb-5">
+            <div class="card-body">
+                <i id="iconWeather" style="font-size: 2rem; color: cornflowerblue;"></i>
+                
+                <p id="demo1"></p>
+            </div>
+        </main>
+    </div> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var txtLatitude = ''
+        var txtLongitude = ''
+        var APIString = ''
+
+        function getLocation(){
+            navigator.geolocation.getCurrentPosition(userLocation, errorHandler)
+        }
+        function userLocation(position){
+            txtLatitude = position.coords.latitude
+            txtLongitude = position.coords.longitude 
+            
+            APIString = "https://api.open-meteo.com/v1/forecast?latitude=" + String(txtLatitude) + "&longitude=" + String(txtLongitude).trim() + "&amp" + "current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch"
+            if(String(txtLatitude).length > 1){
+                getWeather()
+            }
+        }
+        function errorHandler(error){
+            if (error.PERMISSION_DENIED){
+                Swal.fire({
+                    title: "Oh no, you have an error!",
+                    html: '<p class="mb-0 mt-0">Location permissions required. Please reload page.</p>',
+                    icon: "error"
+                });
+            }
+            else{
+                Swal.fire({
+                    title: "Oh no, you have an error!",
+                    html: '<p class="mb-0 mt-0">An error has occurred. Please reload page.</p>',
+                    icon: "error"
+                });
+            }
+        }
+
+        async function getWeather(){
+            try{
+                APIString = "https://api.open-meteo.com/v1/forecast?latitude=" + String(txtLatitude).trim() + "&longitude=" + String(txtLongitude).trim() + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch"
+                const objResponse = await fetch(APIString)
+                if(!objResponse.ok){
+                    throw new Error(`HTTP Error Status: ${objResponse.status}`)
+                }
+                const objData = await objResponse.json()
+                console.log(objData.current.wind_speed_10m)
+                switch(objData.current.weather_code){
+                    case 0:
+                    case 1:
+                        if (objData.current.is_day == 1){
+                            document.querySelector('#iconWeather').className = "bi-sun-fill"
+                        }
+                        else{
+                            document.querySelector('#iconWeather').className = "bi-moon-fill"
+                            document.querySelector('#txtWeather').innerHTML = "Clear"
+                        }
+                        break
+                    case 2:
+                        if (objData.current.is_day == 1){
+                                document.querySelector('#iconWeather').className = "bi-cloud-sun-fill"
+                            }
+                            else{
+                                document.querySelector('#iconWeather').className = "bi-cloud-moon-fill"
+                                document.querySelector('#txtWeather').innerHTML = "Partly cloudy"
+                            }
+                        break
+                    case 3:
+                        document.querySelector('#iconWeather').className = "bi-cloud-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Cloudy"
+                        break
+                    case 45:
+                    case 48:
+                        document.querySelector('#iconWeather').className = "bi-cloud-fog2-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Fog"
+                        break
+                    case 51:
+                    case 53:
+                    case 55:
+                        document.querySelector('#iconWeather').className = "bi-cloud-drizzle-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Drizzle"
+                        break
+                    case 56:
+                    case 57:
+                        document.querySelector('#iconWeather').className = "bi-cloud-sleet-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Freezing drizzle"
+                        break
+                    case 61:
+                        document.querySelector('#iconWeather').className = "bi-cloud-drizzle-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Light rain"
+                        break
+                    case 63:
+                        document.querySelector('#iconWeather').className = "bi-cloud-rain-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Moderate rain"
+                        break
+                    case 65:
+                        document.querySelector('#iconWeather').className = "bi-cloud-rain-heavy-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Heavy rain"
+                        break
+                    case 66:
+                    case 67:
+                        document.querySelector('#iconWeather').className = "bi-cloud-sleet-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Freezing rain"
+                        break
+                    case 71:
+                    case 73:
+                    case 75:
+                    case 77:
+                    case 85:
+                    case 86:
+                        document.querySelector('#iconWeather').className = "bi-cloud-snow-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Snow"
+                        break
+                    case 80:
+                        document.querySelector('#iconWeather').className = "bi-cloud-drizzle-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Slight rain showers"
+                        break
+                    case 81:
+                        document.querySelector('#iconWeather').className = "bi-cloud-rain-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Moderate rain showers"
+                        break
+                    case 82:
+                        document.querySelector('#iconWeather').className = "bi-cloud-rain-heavy-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Heavy rain showers"
+                        break
+                    case 95:
+                    case 96:
+                    case 99:
+                        document.querySelector('#iconWeather').className = "bi-cloud-lightning-rain-fill"
+                        document.querySelector('#txtWeather').innerHTML = "Thunderstorm"
+                        break    
+                    
+                }
+                document.querySelector('#txtTemp').innerHTML = String(objData.current.temperature_2m) + "°"
+                document.querySelector('#txtFeelsLike').innerHTML = "Feels like: " + String(objData.current.apparent_temperature) + "°"
+                document.querySelector('#txtHumidity').innerHTML = String(objData.current.relative_humidity_2m) + "%"
+                document.querySelector('#txtWindSpeed').innerHTML = String(objData.current.wind_speed_10m) + " MPH"
+                document.querySelector('#txtPercep').innerHTML = String(objData.current.precipitation) + "%"
+                
+            }
+            catch (objError){
+                console.log('Error fetching objData', objError)
+            }
+        }
+    </script>
+    <div class="d-flex justify-content-center align-items-center">
+        <main class="card col-12 col-md-6 col-lg-6 mt-5 mb-5">
+            <div class="card-body">
+                <h3 class="text-center">Current Conditions</h3>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <i id="iconWeather" style="font-size: 5vw; color: cornflowerblue;" aria-hidden="true"></i>
+                        </div> 
+                        <p id="txtWeather" class="text-center"></p>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <i id="iconTemp" class="bi-thermometer-half" style="font-size: 5vw; color: cornflowerblue;" aria-hidden="true"></i>
+                            <span id="txtTemp" aria-labelledby="txtTemp"></span>
+                        </div>
+                        <p id="txtFeelsLike" class="d-flex justify-content-center align-items-center m-2" ></p>
+                    </div>
+
+                    <div class="col-sm-6">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <i id="iconWind" class="bi-wind m-2" style="font-size: 5vw; color: cornflowerblue;" aria-label="Wind"></i>
+                                <span id="txtWindSpeed" aria-labelledby="txtWindSpeed"></span>
+                            </div>
+                            <div class="d-flex justify-content-center align-items-center">
+                                <i id="iconHumidity" class="bi-moisture m-2" style="font-size: 5vw; color: cornflowerblue;" aria-label="Humidity"></i>
+                                <span id="txtHumidity" ></span>
+                            </div>
+                            <div class="d-flex justify-content-center align-items-center">
+                                <i id="iconPercep" class="bi-umbrella-fill m-2" style="font-size: 5vw; color: cornflowerblue;" aria-label="precipitation"></i>
+                                <span id="txtPercep" ></span>
+                            </div>
+                        </div> 
+                        <p id="txtWeather" class=""></p>
+                    </div>
+                </div>
+                
+            </div> 
+        </main>
+    </div>
+</body>
+</html>
