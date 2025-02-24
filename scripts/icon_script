@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Source icon file
+ICON_FILE="icon.jpg"
+
+# Check if ImageMagick is installed
+if ! command -v convert &> /dev/null; then
+    echo "Error: ImageMagick (magick) is not installed. Install it first."
+    exit 1
+fi
+
+# Create iOS and Android folders
+mkdir -p ios_icons android_icons/mipmap-mdpi android_icons/mipmap-hdpi \
+         android_icons/mipmap-xhdpi android_icons/mipmap-xxhdpi android_icons/mipmap-xxxhdpi
+
+# iOS Icon Sizes
+declare -A IOS_SIZES=(
+    ["Icon-AppStore-1024"]="1024"
+    ["Icon-60@2x-120"]="120"
+    ["Icon-60@3x-180"]="180"
+    ["Icon-76"]="76"
+    ["Icon-76@2x-152"]="152"
+    ["Icon-83.5@2x-167"]="167"
+)
+
+echo "Generating iOS icons..."
+for name in "${!IOS_SIZES[@]}"; do
+    convert "$ICON_FILE" -resize "${IOS_SIZES[$name]}x${IOS_SIZES[$name]}" "ios_icons/$name.png"
+done
+
+# Android Icon Sizes
+declare -A ANDROID_SIZES=(
+    ["mipmap-mdpi/icon"]="48"
+    ["mipmap-hdpi/icon"]="72"
+    ["mipmap-xhdpi/icon"]="96"
+    ["mipmap-xxhdpi/icon"]="144"
+    ["mipmap-xxxhdpi/icon"]="192"
+    ["playstore/icon"]="512"
+)
+
+echo "Generating Android icons..."
+for folder in "${!ANDROID_SIZES[@]}"; do
+    convert "$ICON_FILE" -resize "${ANDROID_SIZES[$folder]}x${ANDROID_SIZES[$folder]}" "android_icons/$folder.png"
+done
+
+echo "Icon resizing complete!"
+echo "iOS icons saved in 'ios_icons/'"
+echo "Android icons saved in 'android_icons/'"
+
